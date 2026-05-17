@@ -1,554 +1,489 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>APEX — Gold Trading Strategist | Investo</title>
-  <meta name="description" content="Talk to APEX — our AI trading strategist. Get the Gold Trading Playbook and learn exactly when XAUUSD moves and why." />
-  <meta property="og:title" content="APEX — Gold Trading Strategist" />
-  <meta property="og:description" content="A macro-driven system for trading XAUUSD with confidence. £4.50. Instant download." />
-  <meta property="og:image" content="https://pe56d.s3.amazonaws.com/o_1jogekavj1lc289onpb5581upi15.png" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <meta name="description" content="Talk to APEX — our gold trading strategist. Get the Gold Trading Playbook for £4.50."/>
+  <meta property="og:title" content="APEX — Gold Trading Strategist | Investo"/>
+  <meta property="og:description" content="Macro-driven XAUUSD system. NFP, CPI, Fed decoded. £4.50 instant download."/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body, #root { height: 100%; }
-    body { background: #080808; font-family: sans-serif; -webkit-font-smoothing: antialiased; }
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.3); border-radius: 2px; }
-    @keyframes glow {
-      0%, 100% { box-shadow: 0 0 20px rgba(212,168,67,0.3); }
-      50% { box-shadow: 0 0 50px rgba(212,168,67,0.7); }
-    }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 0.3; transform: scale(0.8); }
-      50% { opacity: 1; transform: scale(1.2); }
-    }
-    @keyframes shimmer {
-      0% { background-position: -200% center; }
-      100% { background-position: 200% center; }
-    }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    textarea { resize: none; }
-    textarea:focus, input:focus { outline: none; }
-    a { color: inherit; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;background:#080808;font-family:sans-serif;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:4px}
+    ::-webkit-scrollbar-thumb{background:rgba(212,168,67,0.4);border-radius:2px}
+    @keyframes glow{0%,100%{box-shadow:0 0 20px rgba(212,168,67,.25)}50%{box-shadow:0 0 45px rgba(212,168,67,.6)}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+    .choice-btn:hover{background:rgba(212,168,67,0.14)!important;transform:translateY(-1px)}
+    .buy-btn:hover{opacity:.88;transform:translateY(-1px)}
   </style>
 </head>
 <body>
-  <div id="root"></div>
+<div id="root"></div>
+<script>
+const BOOK_URL="https://payhip.com/Investo";
 
-  <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+/* ── CONVERSATION TREE ─────────────────────────────────────────────────── */
+const TREE={
+  start:{
+    text:"Gold just hit another all-time high.\n\nMost traders watched it happen — and did nothing.\n\nDo you trade gold (XAUUSD)?",
+    choices:[
+      {label:"Yes, I trade gold / forex",next:"trades_gold"},
+      {label:"I want to start trading",next:"wants_start"},
+      {label:"I invest, not trade",next:"investor"},
+      {label:"Just curious about gold",next:"curious"},
+    ]
+  },
+  trades_gold:{
+    text:"Good. Then you already know how violent gold moves on NFP and CPI days.\n\nWhat's your biggest frustration when trading XAUUSD?",
+    choices:[
+      {label:"I never know which direction it'll go",next:"pain_direction"},
+      {label:"I keep getting stopped out on news spikes",next:"pain_stopout"},
+      {label:"I have no system — I just guess",next:"pain_nosystem"},
+      {label:"I'm profitable but want more edge",next:"pain_moreedge"},
+    ]
+  },
+  wants_start:{
+    text:"Smart time to start. Gold is in one of the biggest bull runs in history — analysts are calling for $5,000+.\n\nWhat's holding you back?",
+    choices:[
+      {label:"I don't know where to begin",next:"beginner_start"},
+      {label:"I'm afraid of losing money",next:"beginner_afraid"},
+      {label:"I don't understand news events",next:"beginner_news"},
+    ]
+  },
+  investor:{
+    text:"Smart. Gold has outperformed most asset classes since 2023.\n\nWhat are you looking for?",
+    choices:[
+      {label:"Time my entries and exits better",next:"investor_timing"},
+      {label:"Understand what drives the price",next:"investor_drivers"},
+    ]
+  },
+  curious:{
+    text:"Gold is fascinating right now. Rate cuts, geopolitical tension, central bank buying — the macro case for $5,000 is stronger than ever.\n\nWhat interests you most?",
+    choices:[
+      {label:"The $5,000 gold forecast",next:"forecast"},
+      {label:"How to profit from gold moves",next:"wants_start"},
+      {label:"What actually drives gold prices",next:"investor_drivers"},
+    ]
+  },
+  pain_direction:{
+    text:"That's the most common problem — and it's not your fault.\n\nGold reacts to macro data in very specific, predictable ways:\n\n📊 NFP below 100K jobs? Gold goes bullish almost every time.\n📊 CPI above 4%? Bearish shock.\n\nOnce you know the exact thresholds, the direction becomes obvious before the candle even closes.",
+    choices:[
+      {label:"How do I learn these thresholds?",next:"pitch_thresholds"},
+      {label:"Tell me more about NFP",next:"explain_nfp"},
+    ]
+  },
+  pain_stopout:{
+    text:"The classic news trap. You're in the right direction, but the initial spike wicks you out before the real move.\n\nThe fix is a simple timing rule: never enter in the first 30 seconds. Wait for the second candle to confirm direction.\n\nThat one rule alone stops 80% of bad news entries.",
+    choices:[
+      {label:"What else is in the system?",next:"pitch_full"},
+      {label:"I want to see the full playbook",next:"pitch_close"},
+    ]
+  },
+  pain_nosystem:{
+    text:"Guessing on gold is expensive. Wide spreads, violent moves, no framework = paying tuition to the market.\n\nThe good news: gold is one of the most macro-driven instruments in the world. That means it's actually very systematic — if you know what to look for.",
+    choices:[
+      {label:"What should I be looking for?",next:"pitch_thresholds"},
+      {label:"Show me the system",next:"pitch_close"},
+    ]
+  },
+  pain_moreedge:{
+    text:"Respect. Most systems miss the macro layer entirely — DXY correlation, crisis-mode logic, the exact hierarchy of which data matters most and when.\n\nWhat's your current edge missing?",
+    choices:[
+      {label:"I don't use macro data enough",next:"pitch_macro"},
+      {label:"My timing on entries is off",next:"pain_stopout"},
+      {label:"I want to see the playbook",next:"pitch_close"},
+    ]
+  },
+  beginner_start:{
+    text:"Here's where to start: gold (XAUUSD) moves on macro data — NFP, CPI, Fed decisions. Learn what those mean and how gold reacts, and you have an edge immediately.\n\nOne of our buyers said they made their first £50 profit on their very first trade after reading the playbook. 📈",
+    choices:[
+      {label:"What's in the playbook?",next:"pitch_full"},
+      {label:"How much does it cost?",next:"pitch_price"},
+    ]
+  },
+  beginner_afraid:{
+    text:"That's healthy — you SHOULD be careful with money.\n\nThe traders who lose are the ones who trade without a system. A proper framework tells you when NOT to trade — which is just as important as when to enter.\n\nProtecting capital is rule #1.",
+    choices:[
+      {label:"Tell me about risk management",next:"risk_mgmt"},
+      {label:"What's in the playbook?",next:"pitch_full"},
+    ]
+  },
+  beginner_news:{
+    text:"That's exactly what the playbook solves. It translates raw economic data into simple trade signals:\n\n📊 NFP < 100K = gold bullish\n📊 CPI > 4% = bearish shock\n📊 Fed sounds dovish = gold bid\n\nScannable in 30 seconds before any news release.",
+    choices:[
+      {label:"I need this — how much?",next:"pitch_price"},
+      {label:"What else is covered?",next:"pitch_full"},
+    ]
+  },
+  investor_timing:{
+    text:"Timing gold entries — even for long-term positions — comes down to the macro cycle.\n\nWhen the Fed pivots dovish, when real yields fall, when DXY weakens — those are your accumulation signals.\n\nThe playbook maps exactly which data events create those conditions.",
+    choices:[
+      {label:"How much does it cost?",next:"pitch_price"},
+      {label:"Tell me more",next:"pitch_full"},
+    ]
+  },
+  investor_drivers:{
+    text:"Gold is driven by 4 main forces:\n\n1️⃣ US Dollar strength (DXY)\n2️⃣ Real interest rates\n3️⃣ Geopolitical risk / safe haven demand\n4️⃣ Central bank buying\n\nThe playbook shows exactly how each event — NFP, CPI, Fed minutes — maps to these drivers and what it means for price.",
+    choices:[
+      {label:"I want the full picture",next:"pitch_close"},
+      {label:"How much is it?",next:"pitch_price"},
+    ]
+  },
+  explain_nfp:{
+    text:"NFP (Non-Farm Payrolls) is released the first Friday of every month. It's one of the biggest gold movers.\n\nWeak jobs data → Fed cuts rates → dollar falls → gold rises.\nStrong jobs data → Fed holds → dollar strengthens → gold dips.\n\nThe playbook gives you exact numbers to watch and how to position before the release.",
+    choices:[
+      {label:"What other events are covered?",next:"pitch_full"},
+      {label:"I want the playbook",next:"pitch_close"},
+    ]
+  },
+  pitch_thresholds:{
+    text:"The playbook gives you exact thresholds for every major release:\n\n• NFP: <100K = bullish / >200K = bearish\n• CPI: >4% = bearish shock / <2.5% = bullish\n• Fed tone: dovish language = immediate gold bid\n• ISM Manufacturing: <48 = risk-off = gold up\n\nPlus a 30-second checklist to run before every trade.",
+    choices:[
+      {label:"How much is it?",next:"pitch_price"},
+      {label:"What else is in it?",next:"pitch_full"},
+    ]
+  },
+  pitch_macro:{
+    text:"The macro layer most traders miss:\n\n📌 DXY above key level = fade gold rallies\n📌 Real yields rising = stay cautious on longs\n📌 Crisis mode (war, bank failure, liquidity shock) = risk-off = gold up regardless of data\n\nThis hierarchy tells you which signal overrides which — so you're never caught on the wrong side.",
+    choices:[
+      {label:"This is what I need — how much?",next:"pitch_price"},
+      {label:"Show me everything in it",next:"pitch_full"},
+    ]
+  },
+  risk_mgmt:{
+    text:"The playbook includes a strict risk framework:\n\n🔒 1% max risk per trade\n🔒 No trading in the first 30 seconds of a news release\n🔒 Wait for second candle confirmation\n🔒 Defined levels to invalidate your thesis before entry\n\nRule-based trading removes emotion. That's what keeps your account alive long-term.",
+    choices:[
+      {label:"I want the full playbook",next:"pitch_close"},
+      {label:"How much is it?",next:"pitch_price"},
+    ]
+  },
+  forecast:{
+    text:"The $5,000 gold thesis:\n\n• Fed rate cuts weaken the dollar\n• Central banks (China, Russia, India) buying record amounts\n• Geopolitical instability driving safe haven demand\n• Real yields turning negative again\n\nThe playbook shows you how to position for this move and trade every step of the way up.",
+    choices:[
+      {label:"How do I trade this move?",next:"pitch_full"},
+      {label:"How much is the playbook?",next:"pitch_price"},
+    ]
+  },
+  pitch_full:{
+    text:"Everything inside the Gold Trading Playbook:\n\n📘 Macro-driven XAUUSD system\n📊 Exact NFP / CPI / Fed / ISM thresholds\n⏱ 30-second pre-trade checklist\n🕐 Timing rules (second candle confirmation)\n🌍 Crisis-mode logic\n📉 DXY correlation framework\n🔒 1% risk discipline\n💡 $5,000 gold forecast & positioning guide\n\nPDF. Instant download. Read once, use every trade.",
+    choices:[
+      {label:"How much is it?",next:"pitch_price"},
+      {label:"I'm ready to buy",next:"pitch_close"},
+    ]
+  },
+  pitch_price:{
+    text:"The Gold Trading Playbook is £4.50.\n\nThat's less than a coffee.\n\nOne trade using this system and you've paid for it a thousand times over.\n\nInstant PDF download — you can be reading it in 60 seconds.",
+    choices:[
+      {label:"✅ Get it now for £4.50",next:"buy_now"},
+      {label:"Is it really worth it?",next:"objection_worth"},
+      {label:"I'm not sure yet",next:"objection_unsure"},
+    ]
+  },
+  pitch_close:{
+    text:"The Gold Trading Playbook is your complete XAUUSD system.\n\nMacro triggers. Exact thresholds. Timing rules. Risk management. The $5,000 forecast.\n\nAll for £4.50. Instant download.\n\nOne good trade pays for it forever.",
+    choices:[
+      {label:"✅ Yes — get it now",next:"buy_now"},
+      {label:"What's the catch?",next:"objection_catch"},
+      {label:"I need to think about it",next:"objection_think"},
+    ]
+  },
+  objection_worth:{
+    text:"Here's what a buyer said:\n\n⭐⭐⭐⭐⭐ \"Got my first £50 profit immediately after reading it.\"\n\nAt £4.50, you risk less than a takeaway to get a system that could change how you trade gold forever.\n\nIf it helps you avoid just one bad trade — it's paid for itself 10x.",
+    choices:[
+      {label:"✅ That's enough — get it now",next:"buy_now"},
+      {label:"Tell me more about what's inside",next:"pitch_full"},
+    ]
+  },
+  objection_catch:{
+    text:"No catch. It's a PDF ebook. £4.50, instant download, yours to keep forever.\n\nNo subscription. No upsell. No course to buy after.\n\nJust the system, in plain language, ready to use on your next trade.",
+    choices:[
+      {label:"✅ OK I'm in — get it",next:"buy_now"},
+      {label:"Still not sure",next:"objection_unsure"},
+    ]
+  },
+  objection_think:{
+    text:"Totally fine. But consider this: gold doesn't wait.\n\nNFP is coming. CPI is coming. Fed decision is coming.\n\nEvery one of those is a big move — and right now you don't have the system to trade it confidently.\n\n£4.50 fixes that today.",
+    choices:[
+      {label:"✅ You're right — get it now",next:"buy_now"},
+      {label:"Not right now",next:"objection_later"},
+    ]
+  },
+  objection_unsure:{
+    text:"What's holding you back? I can answer anything.",
+    choices:[
+      {label:"I'm a complete beginner",next:"beginner_start"},
+      {label:"£4.50 still feels risky",next:"objection_risk"},
+      {label:"I already have a system",next:"objection_system"},
+      {label:"I don't trade gold",next:"objection_notgold"},
+    ]
+  },
+  objection_risk:{
+    text:"Less than a coffee. If you lose £4.50 on this, that's genuinely the lowest-risk decision you'll ever make in trading.\n\nBut you won't lose it — you'll gain a framework you can use on every gold trade from today.",
+    choices:[
+      {label:"✅ Fine — I'm getting it",next:"buy_now"},
+      {label:"Maybe later",next:"objection_later"},
+    ]
+  },
+  objection_system:{
+    text:"Fair. One question: does your current system give you exact macro thresholds for NFP, CPI and Fed decisions — with timing rules for news candles?\n\nIf not, this fills that gap. Most systems cover technical analysis. This covers the macro layer that moves gold 30–80 pips in seconds.",
+    choices:[
+      {label:"Mine doesn't cover that — I'll get it",next:"buy_now"},
+      {label:"Mine does cover that",next:"objection_covered"},
+    ]
+  },
+  objection_notgold:{
+    text:"XAUUSD is the most macro-reactive instrument in the market. Understanding how it moves makes you a better trader across all pairs and indices.\n\nPlus — with gold heading toward $5,000, this is the trade of the decade. Worth knowing the system.",
+    choices:[
+      {label:"✅ Fair point — get it",next:"buy_now"},
+      {label:"Maybe another time",next:"objection_later"},
+    ]
+  },
+  objection_covered:{
+    text:"Then you're already ahead of most traders. The playbook might still sharpen your exact thresholds — but you're making the right calls.\n\nIf you ever want the full macro framework for £4.50, it'll be here.",
+    choices:[
+      {label:"Actually, let me grab it",next:"buy_now"},
+      {label:"Thanks — maybe later",next:"objection_later"},
+    ]
+  },
+  objection_later:{
+    text:"No problem at all. The link is here whenever you're ready.\n\nGood luck on your next trade. When gold moves on NFP day — you'll know where to find the system. 👇",
+    showBuy:true,
+    choices:[]
+  },
+  buy_now:{
+    text:"Great decision. 🎯\n\nClick the button below — secure checkout, PDF delivered instantly to your email.\n\nWelcome to trading gold with a real system.",
+    showBuy:true,
+    choices:[]
+  },
+};
 
-    const BOOK_URL = "https://payhip.com/Investo";
+/* ── HELPERS ───────────────────────────────────────────────────────────── */
+function el(tag,attrs,text){
+  const e=document.createElement(tag);
+  Object.entries(attrs||{}).forEach(([k,v])=>{
+    if(k==="style")e.style.cssText=v;
+    else if(k==="onclick")e.addEventListener("click",v);
+    else if(k==="className")e.className=v;
+    else e.setAttribute(k,v);
+  });
+  if(text!==undefined)e.textContent=text;
+  return e;
+}
 
-    const SYSTEM_PROMPT = `You are APEX — an elite, razor-sharp AI sales strategist for the Gold Trading Playbook (£10), sold at https://payhip.com/Investo.
+/* ── LANDING ───────────────────────────────────────────────────────────── */
+function renderLanding(){
+  document.body.innerHTML="";
+  const style=document.createElement("style");
+  style.textContent=`@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(212,168,67,.25)}50%{box-shadow:0 0 45px rgba(212,168,67,.6)}}button:hover{opacity:.9}`;
+  document.head.appendChild(style);
 
-YOUR MISSION: Qualify visitors, identify traders, build urgency, handle objections, and close the sale.
-
-PRODUCT FACTS:
-- Name: "Gold Price Forecast 2026: The Ultimate Playbook for $5,000+ Gold"
-- Price: £4.50 (less than a cup of coffee — and one good trade pays for it a thousand times over)
-- Format: PDF (3MB), instant download
-- Link: https://payhip.com/Investo
-- What it delivers:
-  • Macro-driven XAUUSD trading system — NFP, CPI, PPI, ISM, Fed decisions decoded into exact bullish/bearish triggers
-  • Exact thresholds: NFP <100K = instant bullish; CPI >4% = bearish shock
-  • 30-second pre-trade checklist
-  • Timing rules: no trading first 30 seconds, wait for second candle confirmation
-  • Crisis-mode logic: wars, bank failures, liquidity shocks = risk-off = gold up
-  • DXY correlation rules, key level framework, 1% risk discipline
-  • Scannable in 30 seconds before any major release
-  • Real review: beginner made first £50 immediately after reading it
-
-YOUR SALES APPROACH:
-1. QUALIFY FIRST — Ask 1 natural question to identify if they trade gold/forex or want to.
-2. IDENTIFY PAIN — Find their frustration: guessing entries? missing news moves? no system? emotional trading?
-3. AGITATE — Make the pain vivid. "You've probably watched gold spike 30 pips on NFP with no idea which way to go."
-4. SOLVE — Present the playbook as the exact solution to their specific pain.
-5. HANDLE OBJECTIONS:
-   - "Too expensive" → "It's £4.50. That's less than a coffee. One trade using this pays for it a thousand times over."
-   - "I'm a beginner" → "A beginner made £50 on their first trade after reading it."
-   - "I already have a system" → "Does yours give exact NFP thresholds that flip gold bullish in seconds?"
-   - "I don't trade gold" → "XAUUSD is the most macro-responsive instrument. This gives you edge across the board."
-6. CLOSE with urgency and always include the buy link: https://payhip.com/Investo
-
-PERSONALITY:
-- Confident, direct, never pushy or salesy
-- Speak like a seasoned trader, not a marketer
-- Short punchy sentences. Maximum 3-4 sentences per reply.
-- Use trading language naturally (pips, entries, macro, DXY, impulse, price action)
-- You are APEX — a trading strategist, not a chatbot
-
-CLOSING LINES:
-- "It's £4.50. Less than a coffee. What's stopping you?"  
-- "One NFP trade with this system pays for it a thousand times over."
-- "Grab it here — instant download: https://payhip.com/Investo"
-
-Start with a confident, intriguing opener that hooks traders immediately. Do NOT say "Hello" or "Hi there". Open with a bold statement about gold or trading.`;
-
-    const QUICK_REPLIES = [
-      "I trade forex / gold",
-      "I'm new to trading",
-      "What's inside the playbook?",
-      "Is it worth £10?",
-      "I already have a system",
-      "Tell me about XAUUSD",
-    ];
-
-    function TypingDots() {
-      return (
-        <div style={{ display:"flex", gap:5, padding:"14px 18px", alignItems:"center" }}>
-          {[0,1,2].map(i => (
-            <div key={i} style={{
-              width:7, height:7, borderRadius:"50%", background:"#d4a843",
-              animation:`pulse 1.2s ease-in-out ${i*0.2}s infinite`
-            }}/>
-          ))}
+  const page=el("div",{style:"min-height:100vh;background:#080808;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;position:relative;overflow:hidden;"});
+  page.innerHTML=`
+    <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 50% 25%,rgba(212,168,67,.08) 0%,transparent 65%);pointer-events:none;"></div>
+    <div style="max-width:460px;width:100%;text-align:center;animation:slideUp .6s ease-out;position:relative;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:22px;">
+        <div style="height:1px;width:36px;background:linear-gradient(90deg,transparent,#d4a843);"></div>
+        <span style="font-size:10px;letter-spacing:5px;color:#d4a843;font-family:monospace;text-transform:uppercase;">Investo · Gold Intelligence</span>
+        <div style="height:1px;width:36px;background:linear-gradient(90deg,#d4a843,transparent);"></div>
+      </div>
+      <h1 style="font-size:clamp(28px,6vw,46px);font-weight:300;color:#fff;font-family:Georgia,serif;line-height:1.15;letter-spacing:-1px;margin-bottom:14px;">
+        Still guessing which way<br>
+        <span style="background:linear-gradient(135deg,#d4a843 0%,#f5d078 45%,#d4a843 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;">gold is going to move?</span>
+      </h1>
+      <!-- Trust badges strip -->
+      <div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-bottom:26px;">
+        <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:6px 14px;">
+          <span style="font-size:14px;">🚫</span><span style="font-size:12px;color:rgba(255,255,255,.7);font-family:monospace;letter-spacing:.5px;">No email required</span>
         </div>
-      );
-    }
+        <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:6px 14px;">
+          <span style="font-size:14px;">🔒</span><span style="font-size:12px;color:rgba(255,255,255,.7);font-family:monospace;letter-spacing:.5px;">No signup</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:6px 14px;">
+          <span style="font-size:14px;">⚡</span><span style="font-size:12px;color:rgba(255,255,255,.7);font-family:monospace;letter-spacing:.5px;">100% free to chat</span>
+        </div>
+      </div>
 
-    function Message({ msg, isNew }) {
-      const isBot = msg.role === "assistant";
+      <p style="color:rgba(255,255,255,.45);font-size:15px;line-height:1.65;margin-bottom:28px;">
+        Talk to APEX — our gold trading strategist. Answer a few quick questions and find out exactly what your trading is missing. <strong style="color:rgba(255,255,255,.7);">No email. No account. Just answers.</strong>
+      </p>
 
-      const renderContent = (text) => {
-        const parts = text.split(/(https:\/\/payhip\.com\/Investo)/g);
-        return parts.map((part, i) =>
-          part === "https://payhip.com/Investo"
-            ? <a key={i} href={BOOK_URL} target="_blank" rel="noopener noreferrer"
-                style={{ color:"#d4a843", textDecoration:"none", fontWeight:700, borderBottom:"1px solid rgba(212,168,67,0.4)" }}>
-                payhip.com/Investo
-              </a>
-            : part
-        );
-      };
+      <!-- Social proof bar -->
+      <div style="display:flex;gap:0;margin-bottom:24px;border-radius:12px;overflow:hidden;border:1px solid rgba(212,168,67,.15);">
+        <div style="flex:1;padding:14px 12px;text-align:center;background:rgba(212,168,67,.06);border-right:1px solid rgba(212,168,67,.12);">
+          <div style="font-size:18px;font-weight:900;color:#d4a843;font-family:monospace;">£4.50</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:2px;">One-time</div>
+        </div>
+        <div style="flex:1;padding:14px 12px;text-align:center;background:rgba(212,168,67,.06);border-right:1px solid rgba(212,168,67,.12);">
+          <div style="font-size:18px;font-weight:900;color:#d4a843;font-family:monospace;">⚡ PDF</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:2px;">Instant download</div>
+        </div>
+        <div style="flex:1;padding:14px 12px;text-align:center;background:rgba(212,168,67,.06);">
+          <div style="font-size:18px;font-weight:900;color:#d4a843;font-family:monospace;">★ 5.0</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:2px;">Verified buyers</div>
+        </div>
+      </div>
 
-      const hasBuyLink = msg.content && msg.content.includes("payhip.com/Investo");
-
-      return (
-        <div style={{
-          display:"flex", flexDirection: isBot ? "row" : "row-reverse",
-          gap:10, marginBottom:16,
-          animation: isNew ? "slideIn 0.35s ease-out" : "none",
-        }}>
-          {isBot && (
-            <div style={{
-              width:36, height:36, borderRadius:"50%", flexShrink:0,
-              background:"linear-gradient(135deg,#d4a843,#8b6914)",
-              display:"flex", alignItems:"center", justifyContent:"center",
-              fontSize:14, fontWeight:900, color:"#000", fontFamily:"monospace",
-              marginTop:2,
-            }}>A</div>
-          )}
-          <div style={{ maxWidth:"80%", display:"flex", flexDirection:"column", alignItems: isBot ? "flex-start" : "flex-end" }}>
-            {isBot && <div style={{ fontSize:10, color:"#d4a843", letterSpacing:2, marginBottom:5, fontFamily:"monospace" }}>APEX</div>}
-            <div style={{
-              padding:"12px 16px",
-              borderRadius: isBot ? "4px 16px 16px 16px" : "16px 4px 16px 16px",
-              background: isBot ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg,#d4a843,#b8902e)",
-              color: isBot ? "rgba(255,255,255,0.9)" : "#000",
-              fontSize:14, lineHeight:1.65,
-              border: isBot ? "1px solid rgba(212,168,67,0.15)" : "none",
-              whiteSpace:"pre-wrap", wordBreak:"break-word",
-            }}>
-              {isBot ? renderContent(msg.content) : msg.content}
-            </div>
-            {hasBuyLink && isBot && (
-              <a href={BOOK_URL} target="_blank" rel="noopener noreferrer" style={{
-                marginTop:10, padding:"11px 24px",
-                background:"linear-gradient(135deg,#d4a843,#8b6914)",
-                color:"#000", borderRadius:8, fontWeight:800, fontSize:13,
-                textDecoration:"none", fontFamily:"monospace", letterSpacing:1,
-                display:"inline-block", animation:"glow 2s ease infinite",
-              }}>
-                ⚡ GET THE PLAYBOOK — £4.50
-              </a>
-            )}
+      <!-- Product card -->
+      <div style="background:rgba(212,168,67,.05);border:1px solid rgba(212,168,67,.18);border-radius:18px;padding:22px 24px;margin-bottom:24px;text-align:left;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+          <div>
+            <div style="font-size:10px;color:#d4a843;letter-spacing:3px;font-family:monospace;margin-bottom:6px;">THE PLAYBOOK</div>
+            <div style="font-size:15px;font-weight:700;color:#fff;line-height:1.35;">Gold Price Forecast 2026<br><span style="color:#d4a843;">$5,000+ Gold</span></div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;margin-left:12px;">
+            <div style="font-size:26px;font-weight:900;color:#d4a843;font-family:monospace;line-height:1;">£4.50</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:2px;">PDF · Instant</div>
           </div>
         </div>
-      );
-    }
-
-    function LandingPage({ onStart }) {
-      return (
-        <div style={{
-          minHeight:"100vh", background:"#080808",
-          display:"flex", flexDirection:"column", alignItems:"center",
-          justifyContent:"center", padding:24, position:"relative", overflow:"hidden",
-        }}>
-          <div style={{
-            position:"absolute", top:0, left:0, right:0, bottom:0,
-            background:"radial-gradient(ellipse at 50% 25%, rgba(212,168,67,0.09) 0%, transparent 65%)",
-            pointerEvents:"none",
-          }}/>
-
-          {/* Decorative orbs */}
-          <div style={{ position:"absolute", top:"10%", left:"5%", width:250, height:250,
-            background:"radial-gradient(circle, rgba(212,168,67,0.06) 0%, transparent 70%)",
-            borderRadius:"50%", filter:"blur(40px)", pointerEvents:"none" }}/>
-          <div style={{ position:"absolute", bottom:"10%", right:"5%", width:200, height:200,
-            background:"radial-gradient(circle, rgba(212,168,67,0.05) 0%, transparent 70%)",
-            borderRadius:"50%", filter:"blur(30px)", pointerEvents:"none" }}/>
-
-          <div style={{ animation:"fadeUp 0.6s ease-out", textAlign:"center", maxWidth:480, width:"100%" }}>
-            {/* Eyebrow */}
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, marginBottom:24 }}>
-              <div style={{ height:1, width:40, background:"linear-gradient(90deg,transparent,#d4a843)" }}/>
-              <span style={{ fontSize:10, letterSpacing:5, color:"#d4a843", fontFamily:"monospace", textTransform:"uppercase" }}>
-                Investo · Gold Intelligence
-              </span>
-              <div style={{ height:1, width:40, background:"linear-gradient(90deg,#d4a843,transparent)" }}/>
-            </div>
-
-            <h1 style={{
-              fontSize:"clamp(28px,6vw,48px)", fontWeight:300, color:"#fff",
-              fontFamily:"Georgia,serif", lineHeight:1.15, letterSpacing:-1, marginBottom:14,
-            }}>
-              Still guessing which way<br/>
-              <span style={{
-                background:"linear-gradient(135deg,#d4a843 0%,#f5d078 45%,#d4a843 100%)",
-                WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", fontWeight:700,
-              }}>gold is going to move?</span>
-            </h1>
-
-            <p style={{ color:"rgba(255,255,255,0.38)", fontSize:15, lineHeight:1.65, marginBottom:36 }}>
-              Talk to <strong style={{ color:"rgba(255,255,255,0.6)" }}>APEX</strong> — our AI trading strategist. 
-              Tell us how you trade. We'll show you exactly what you're missing.
-            </p>
-
-            {/* Product card */}
-            <div style={{
-              background:"rgba(212,168,67,0.05)", border:"1px solid rgba(212,168,67,0.18)",
-              borderRadius:18, padding:"22px 26px", marginBottom:32, textAlign:"left",
-            }}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
-                <div>
-                  <div style={{ fontSize:10, color:"#d4a843", letterSpacing:3, fontFamily:"monospace", marginBottom:6, textTransform:"uppercase" }}>The Playbook</div>
-                  <div style={{ fontSize:15, fontWeight:700, color:"#fff", lineHeight:1.35 }}>
-                    Gold Price Forecast 2026<br/>
-                    <span style={{ color:"#d4a843" }}>$5,000+ Gold</span>
-                  </div>
-                </div>
-                <div style={{ textAlign:"right", flexShrink:0, marginLeft:12 }}>
-                  <div style={{ fontSize:26, fontWeight:900, color:"#d4a843", fontFamily:"monospace", lineHeight:1 }}>£4.50</div>
-                  <div style={{ fontSize:10, color:"rgba(255,255,255,0.25)", fontFamily:"sans-serif", marginTop:2 }}>PDF · Instant</div>
-                </div>
-              </div>
-              {[
-                "NFP / CPI / Fed triggers decoded into exact signals",
-                "30-second pre-trade checklist",
-                "Crisis-mode logic: wars, rate shocks, bank failures",
-                "Timing rules that protect your capital",
-              ].map((f,i) => (
-                <div key={i} style={{ display:"flex", gap:10, marginBottom:8, alignItems:"flex-start" }}>
-                  <span style={{ color:"#d4a843", fontSize:11, marginTop:2, flexShrink:0 }}>◆</span>
-                  <span style={{ fontSize:13, color:"rgba(255,255,255,0.55)", lineHeight:1.4 }}>{f}</span>
-                </div>
-              ))}
-              <div style={{
-                marginTop:16, padding:"10px 14px", borderRadius:8,
-                background:"rgba(212,168,67,0.08)", border:"1px solid rgba(212,168,67,0.15)",
-              }}>
-                <span style={{ fontSize:12, color:"#d4a843", fontFamily:"monospace" }}>★★★★★</span>
-                <span style={{ fontSize:12, color:"rgba(255,255,255,0.5)", marginLeft:8 }}>
-                  "Got my first £50 trade immediately after reading it" — Verified buyer
-                </span>
-              </div>
-            </div>
-
-            <button onClick={onStart} style={{
-              width:"100%", padding:"17px", cursor:"pointer",
-              background:"linear-gradient(135deg,#d4a843,#8b6914)",
-              border:"none", borderRadius:12,
-              color:"#000", fontSize:15, fontWeight:800,
-              fontFamily:"monospace", letterSpacing:2, textTransform:"uppercase",
-              animation:"glow 2.5s ease infinite",
-            }}>
-              Talk to APEX — Free →
-            </button>
-
-            <p style={{ marginTop:12, fontSize:11, color:"rgba(255,255,255,0.18)" }}>
-              No email · No signup · Instant access
-            </p>
-          </div>
+        <div style="display:flex;gap:10px;margin-bottom:8px;"><span style="color:#d4a843;font-size:11px;margin-top:2px;">◆</span><span style="font-size:13px;color:rgba(255,255,255,.55);">NFP / CPI / Fed triggers decoded into exact signals</span></div>
+        <div style="display:flex;gap:10px;margin-bottom:8px;"><span style="color:#d4a843;font-size:11px;margin-top:2px;">◆</span><span style="font-size:13px;color:rgba(255,255,255,.55);">30-second pre-trade checklist</span></div>
+        <div style="display:flex;gap:10px;margin-bottom:8px;"><span style="color:#d4a843;font-size:11px;margin-top:2px;">◆</span><span style="font-size:13px;color:rgba(255,255,255,.55);">Crisis-mode logic: wars, rate shocks, bank failures</span></div>
+        <div style="display:flex;gap:10px;margin-bottom:14px;"><span style="color:#d4a843;font-size:11px;margin-top:2px;">◆</span><span style="font-size:13px;color:rgba(255,255,255,.55);">$5,000 gold forecast &amp; positioning guide</span></div>
+        <div style="padding:10px 14px;border-radius:8px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.15);">
+          <span style="font-size:12px;color:#d4a843;">★★★★★</span>
+          <span style="font-size:12px;color:rgba(255,255,255,.5);margin-left:8px;">"Made my first £50 immediately after reading it" — Verified buyer</span>
         </div>
-      );
-    }
+      </div>
 
-    function ChatPage({ messages, loading, input, setInput, onSend, quickReplies, bottomRef, inputRef, newMsgIndex }) {
-      function handleKey(e) {
-        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); }
+      <!-- CTA button -->
+      <button id="startBtn" style="width:100%;padding:18px;background:linear-gradient(135deg,#d4a843,#8b6914);border:none;border-radius:12px;color:#000;font-size:16px;font-weight:800;font-family:monospace;letter-spacing:2px;text-transform:uppercase;cursor:pointer;animation:glow 2.5s ease infinite;position:relative;">
+        Chat with APEX — It's Free →
+      </button>
+
+      <!-- Confidence line under button -->
+      <div style="display:flex;justify-content:center;align-items:center;gap:16px;margin-top:14px;flex-wrap:wrap;">
+        <span style="font-size:12px;color:rgba(255,255,255,.3);display:flex;align-items:center;gap:5px;">
+          <span style="color:#4caf50;font-size:14px;">✓</span> No email ever asked
+        </span>
+        <span style="font-size:12px;color:rgba(255,255,255,.3);display:flex;align-items:center;gap:5px;">
+          <span style="color:#4caf50;font-size:14px;">✓</span> No account needed
+        </span>
+        <span style="font-size:12px;color:rgba(255,255,255,.3);display:flex;align-items:center;gap:5px;">
+          <span style="color:#4caf50;font-size:14px;">✓</span> Takes under 2 minutes
+        </span>
+      </div>
+    </div>`;
+  document.body.appendChild(page);
+  document.getElementById("startBtn").onclick=renderChat;
+}
+
+/* ── CHAT ──────────────────────────────────────────────────────────────── */
+function renderChat(){
+  document.body.innerHTML="";
+  const style=document.createElement("style");
+  style.textContent=`
+    @keyframes glow{0%,100%{box-shadow:0 0 20px rgba(212,168,67,.25)}50%{box-shadow:0 0 45px rgba(212,168,67,.6)}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+    .choice-btn:hover{background:rgba(212,168,67,.14)!important;transform:translateY(-1px)}
+    .buy-btn:hover{opacity:.88;transform:translateY(-1px)}
+  `;
+  document.head.appendChild(style);
+
+  const app=el("div",{style:"display:flex;flex-direction:column;height:100vh;background:#080808;"});
+
+  // Header
+  const hdr=el("div",{style:"padding:14px 18px;border-bottom:1px solid rgba(212,168,67,.12);display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.7);backdrop-filter:blur(12px);flex-shrink:0;"});
+  hdr.innerHTML=`
+    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#d4a843,#5a3e05);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#000;font-family:monospace;animation:glow 3s ease infinite;flex-shrink:0;">A</div>
+    <div><div style="font-weight:700;color:#fff;font-size:14px;">APEX</div><div style="font-size:10px;color:#d4a843;font-family:monospace;letter-spacing:1px;">● LIVE · Gold Trading Strategist</div></div>
+    <a href="${BOOK_URL}" target="_blank" style="margin-left:auto;padding:8px 14px;background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.3);border-radius:8px;color:#d4a843;text-decoration:none;font-size:12px;font-weight:700;font-family:monospace;letter-spacing:1px;white-space:nowrap;">£4.50 GET IT →</a>`;
+
+  const msgs=el("div",{id:"msgs",style:"flex:1;overflow-y:auto;padding:20px 16px 8px;"});
+  const choicesWrap=el("div",{id:"choices",style:"padding:12px 16px 20px;flex-shrink:0;"});
+  const footer=el("div",{style:"text-align:center;padding-bottom:14px;font-size:10px;color:rgba(255,255,255,.1);font-family:monospace;letter-spacing:1px;flex-shrink:0;"});
+  footer.textContent="POWERED BY INVESTO · XAUUSD INTELLIGENCE";
+
+  app.append(hdr,msgs,choicesWrap,footer);
+  document.body.appendChild(app);
+
+  showNode("start",400);
+}
+
+function showNode(nodeId,delay){
+  const node=TREE[nodeId];
+  if(!node)return;
+  setTimeout(()=>{
+    addBotMsg(node.text,node.showBuy,()=>{
+      if(node.choices&&node.choices.length>0)renderChoices(node.choices);
+    });
+  },delay||400);
+}
+
+function addBotMsg(text,showBuy,onDone){
+  const msgs=document.getElementById("msgs");
+  if(!msgs)return;
+
+  // typing indicator
+  const typing=el("div",{style:"display:flex;gap:10px;margin-bottom:16px;animation:slideUp .3s ease-out;"});
+  typing.innerHTML=`
+    <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#d4a843,#8b6914);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#000;font-family:monospace;flex-shrink:0;">A</div>
+    <div style="background:rgba(255,255,255,.05);border:1px solid rgba(212,168,67,.15);border-radius:4px 16px 16px 16px;padding:14px 18px;display:flex;gap:6px;align-items:center;">
+      <div style="width:7px;height:7px;border-radius:50%;background:#d4a843;animation:pulse 1.2s ease-in-out 0s infinite;"></div>
+      <div style="width:7px;height:7px;border-radius:50%;background:#d4a843;animation:pulse 1.2s ease-in-out .2s infinite;"></div>
+      <div style="width:7px;height:7px;border-radius:50%;background:#d4a843;animation:pulse 1.2s ease-in-out .4s infinite;"></div>
+    </div>`;
+  msgs.appendChild(typing);
+  msgs.scrollTop=msgs.scrollHeight;
+
+  setTimeout(()=>{
+    typing.remove();
+    const wrap=el("div",{style:"display:flex;gap:10px;margin-bottom:16px;animation:slideUp .35s ease-out;"});
+    const col=el("div",{style:"max-width:82vw;"});
+    col.innerHTML=`
+      <div style="font-size:10px;color:#d4a843;letter-spacing:2px;margin-bottom:5px;font-family:monospace;">APEX</div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(212,168,67,.15);border-radius:4px 16px 16px 16px;padding:13px 16px;font-size:14px;line-height:1.7;color:rgba(255,255,255,.88);white-space:pre-wrap;word-break:break-word;">${text}</div>`;
+    if(showBuy){
+      const btn=el("a",{
+        href:BOOK_URL,target:"_blank",className:"buy-btn",
+        style:"display:inline-block;margin-top:12px;padding:13px 26px;background:linear-gradient(135deg,#d4a843,#8b6914);color:#000;border-radius:9px;font-weight:800;font-size:13px;text-decoration:none;font-family:monospace;letter-spacing:1px;animation:glow 2s ease infinite;transition:all .15s;"
+      },"⚡ GET THE PLAYBOOK — £4.50");
+      col.appendChild(btn);
+    }
+    const av=el("div",{style:"width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#d4a843,#8b6914);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#000;font-family:monospace;flex-shrink:0;margin-top:20px;"});
+    av.textContent="A";
+    wrap.append(av,col);
+    msgs.appendChild(wrap);
+    msgs.scrollTop=msgs.scrollHeight;
+    if(onDone)onDone();
+  },900);
+}
+
+function addUserMsg(text){
+  const msgs=document.getElementById("msgs");
+  if(!msgs)return;
+  const wrap=el("div",{style:"display:flex;flex-direction:row-reverse;margin-bottom:16px;animation:slideUp .3s ease-out;"});
+  const bubble=el("div",{style:"background:linear-gradient(135deg,#d4a843,#b8902e);color:#000;border-radius:16px 4px 16px 16px;padding:12px 16px;font-size:14px;line-height:1.6;max-width:75vw;font-weight:500;"});
+  bubble.textContent=text;
+  wrap.appendChild(bubble);
+  msgs.appendChild(wrap);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function renderChoices(choices){
+  const wrap=document.getElementById("choices");
+  if(!wrap)return;
+  wrap.innerHTML="";
+  const grid=el("div",{style:"display:flex;flex-direction:column;gap:8px;"});
+  choices.forEach(c=>{
+    const btn=el("button",{
+      style:"width:100%;padding:12px 16px;background:rgba(255,255,255,.04);border:1px solid rgba(212,168,67,.2);border-radius:10px;color:rgba(255,255,255,.85);font-size:14px;text-align:left;cursor:pointer;transition:all .15s;font-family:sans-serif;line-height:1.4;",
+      className:"choice-btn",
+      onclick:()=>{
+        wrap.innerHTML="";
+        addUserMsg(c.label);
+        showNode(c.next,300);
       }
-      return (
-        <div style={{ height:"100vh", background:"#080808", display:"flex", flexDirection:"column", position:"relative", overflow:"hidden" }}>
-          {/* Background glow */}
-          <div style={{
-            position:"absolute", top:0, left:0, right:0, bottom:0,
-            background:"radial-gradient(ellipse at 50% 0%, rgba(212,168,67,0.04) 0%, transparent 55%)",
-            pointerEvents:"none",
-          }}/>
+    },c.label);
+    grid.appendChild(btn);
+  });
+  wrap.appendChild(grid);
+}
 
-          {/* Header */}
-          <div style={{
-            padding:"14px 18px", borderBottom:"1px solid rgba(212,168,67,0.1)",
-            display:"flex", alignItems:"center", gap:12,
-            background:"rgba(0,0,0,0.7)", backdropFilter:"blur(12px)", zIndex:10,
-          }}>
-            <div style={{
-              width:40, height:40, borderRadius:"50%", flexShrink:0,
-              background:"linear-gradient(135deg,#d4a843,#5a3e05)",
-              display:"flex", alignItems:"center", justifyContent:"center",
-              fontSize:16, fontWeight:900, color:"#000", fontFamily:"monospace",
-              animation:"glow 3s ease infinite",
-            }}>A</div>
-            <div>
-              <div style={{ fontWeight:700, color:"#fff", fontSize:14 }}>APEX</div>
-              <div style={{ fontSize:10, color:"#d4a843", fontFamily:"monospace", letterSpacing:1 }}>● LIVE · Gold Trading Strategist</div>
-            </div>
-            <a href={BOOK_URL} target="_blank" rel="noopener noreferrer" style={{
-              marginLeft:"auto",
-              padding:"8px 16px",
-              background:"rgba(212,168,67,0.1)", border:"1px solid rgba(212,168,67,0.28)",
-              borderRadius:8, color:"#d4a843", textDecoration:"none",
-              fontSize:12, fontWeight:700, fontFamily:"monospace", letterSpacing:1, whiteSpace:"nowrap",
-            }}>£4.50 GET IT →</a>
-          </div>
-
-          {/* Messages */}
-          <div style={{ flex:1, overflowY:"auto", padding:"20px 16px" }}>
-            {messages.map((msg, i) => (
-              <Message key={i} msg={msg} isNew={i === newMsgIndex} />
-            ))}
-            {loading && (
-              <div style={{ display:"flex", gap:10, marginBottom:16, animation:"slideIn 0.3s ease-out" }}>
-                <div style={{
-                  width:36, height:36, borderRadius:"50%", flexShrink:0,
-                  background:"linear-gradient(135deg,#d4a843,#8b6914)",
-                  display:"flex", alignItems:"center", justifyContent:"center",
-                  fontSize:14, fontWeight:900, color:"#000", fontFamily:"monospace",
-                }}>A</div>
-                <div style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(212,168,67,0.15)", borderRadius:"4px 16px 16px 16px" }}>
-                  <TypingDots />
-                </div>
-              </div>
-            )}
-            <div ref={bottomRef} />
-          </div>
-
-          {/* Quick replies */}
-          {messages.length <= 2 && !loading && (
-            <div style={{ padding:"8px 16px", display:"flex", gap:8, flexWrap:"wrap" }}>
-              {quickReplies.map((qr,i) => (
-                <button key={i} onClick={() => onSend(qr)} style={{
-                  padding:"7px 14px",
-                  background:"rgba(212,168,67,0.07)", border:"1px solid rgba(212,168,67,0.2)",
-                  borderRadius:20, color:"#d4a843", fontSize:12, cursor:"pointer",
-                  whiteSpace:"nowrap", transition:"all 0.15s",
-                }}>{qr}</button>
-              ))}
-            </div>
-          )}
-
-          {/* Input bar */}
-          <div style={{
-            padding:"12px 16px 18px",
-            borderTop:"1px solid rgba(212,168,67,0.08)",
-            background:"rgba(0,0,0,0.75)", backdropFilter:"blur(12px)",
-          }}>
-            <div style={{
-              display:"flex", gap:10, alignItems:"flex-end",
-              background:"rgba(255,255,255,0.04)", border:"1px solid rgba(212,168,67,0.18)",
-              borderRadius:12, padding:"10px 14px",
-            }}>
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleKey}
-                placeholder="Ask about gold, your trading style, the playbook..."
-                rows={1}
-                style={{
-                  flex:1, background:"transparent", border:"none",
-                  color:"#fff", fontSize:14, lineHeight:1.5,
-                  maxHeight:80, overflow:"auto", fontFamily:"sans-serif",
-                }}
-              />
-              <button onClick={() => onSend()} disabled={!input.trim() || loading} style={{
-                width:36, height:36, flexShrink:0,
-                background: input.trim() ? "linear-gradient(135deg,#d4a843,#8b6914)" : "rgba(255,255,255,0.07)",
-                border:"none", borderRadius:8, cursor: input.trim() ? "pointer" : "not-allowed",
-                display:"flex", alignItems:"center", justifyContent:"center",
-                fontSize:17, color: input.trim() ? "#000" : "rgba(255,255,255,0.3)",
-                transition:"all 0.2s",
-              }}>↑</button>
-            </div>
-            <div style={{ textAlign:"center", marginTop:8, fontSize:10, color:"rgba(255,255,255,0.12)", fontFamily:"monospace", letterSpacing:1 }}>
-              POWERED BY INVESTO · XAUUSD INTELLIGENCE
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    function ApiKeyScreen({ onSave }) {
-      const [key, setKey] = React.useState("");
-      return (
-        <div style={{
-          minHeight:"100vh", background:"#080808", display:"flex",
-          alignItems:"center", justifyContent:"center", padding:24,
-        }}>
-          <div style={{ maxWidth:420, width:"100%", textAlign:"center" }}>
-            <div style={{ fontSize:10, letterSpacing:5, color:"#d4a843", fontFamily:"monospace", marginBottom:16 }}>ONE-TIME SETUP</div>
-            <h2 style={{ color:"#fff", fontFamily:"Georgia,serif", fontWeight:400, fontSize:26, marginBottom:12 }}>
-              Enter your Anthropic API Key
-            </h2>
-            <p style={{ color:"rgba(255,255,255,0.45)", fontSize:13, lineHeight:1.7, marginBottom:28 }}>
-              Get a free key at <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer"
-                style={{ color:"#d4a843" }}>console.anthropic.com</a><br/>
-              Go to <strong style={{color:"rgba(255,255,255,0.7)"}}>API Keys → Create Key</strong>. Paste it below.<br/>
-              Stored only in your browser — never shared.
-            </p>
-            <input
-              type="password"
-              value={key}
-              onChange={e => setKey(e.target.value)}
-              placeholder="sk-ant-api03-..."
-              style={{
-                width:"100%", background:"rgba(255,255,255,0.05)",
-                border:"1px solid rgba(212,168,67,0.3)", borderRadius:10,
-                color:"#fff", padding:"14px 16px", fontSize:14,
-                fontFamily:"monospace", marginBottom:14, outline:"none",
-              }}
-            />
-            <button
-              onClick={() => { if(key.trim()) { try{localStorage.setItem("apex_key",key.trim())}catch(e){} onSave(key.trim()); }}}
-              disabled={!key.trim()}
-              style={{
-                width:"100%", padding:"15px",
-                background: key.trim() ? "linear-gradient(135deg,#d4a843,#8b6914)" : "rgba(255,255,255,0.08)",
-                border:"none", borderRadius:10,
-                color: key.trim() ? "#000" : "rgba(255,255,255,0.25)",
-                fontSize:14, fontWeight:700, fontFamily:"monospace", letterSpacing:1,
-                cursor: key.trim() ? "pointer" : "not-allowed",
-              }}
-            >
-              LAUNCH APEX →
-            </button>
-            <p style={{ marginTop:14, fontSize:11, color:"rgba(255,255,255,0.18)" }}>
-              🔒 Key stored locally · Only sent to Anthropic
-            </p>
-          </div>
-        </div>
-      );
-    }
-
-    function App() {
-      const [apiKey, setApiKey] = React.useState(() => { try{ return localStorage.getItem("apex_key")||"" }catch(e){ return "" } });
-      const [started, setStarted] = useState(false);
-      const [messages, setMessages] = useState([]);
-      const [input, setInput] = useState("");
-      const [loading, setLoading] = useState(false);
-      const [newMsgIndex, setNewMsgIndex] = useState(null);
-      const bottomRef = useRef(null);
-      const inputRef = useRef(null);
-
-      useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior:"smooth" });
-      }, [messages, loading]);
-
-      async function callAPEX(history) {
-        let res, rawText, data;
-        try {
-          res = await fetch("https://api.anthropic.com/v1/messages", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-api-key": apiKey,
-              "anthropic-version": "2023-06-01",
-              "anthropic-dangerous-direct-browser-access": "true",
-            },
-            body: JSON.stringify({
-              model: "claude-sonnet-4-20250514",
-              max_tokens: 1000,
-              system: SYSTEM_PROMPT,
-              messages: history,
-            }),
-          });
-        } catch(e) {
-          return "❌ Network error (CORS or no internet): " + e.message + ". Make sure you are accessing this page via a live URL (Netlify/GitHub), not a local file.";
-        }
-        try {
-          rawText = await res.text();
-        } catch(e) {
-          return "❌ Could not read response body: " + e.message;
-        }
-        if (!res.ok) {
-          return "❌ HTTP " + res.status + " — " + rawText.slice(0, 300);
-        }
-        try {
-          data = JSON.parse(rawText);
-        } catch(e) {
-          return "❌ Response is not JSON (status " + res.status + "): " + rawText.slice(0, 200);
-        }
-        if (data.error) return "❌ API error: " + (data.error.message || JSON.stringify(data.error));
-        if (!data.content) return "❌ No content in response: " + JSON.stringify(data).slice(0, 200);
-        return data.content.map(b => b.text || "").join("") || "Empty response";
-      }
-
-      if (!apiKey) return <ApiKeyScreen onSave={setApiKey} />;
-
-      async function startConversation() {
-        setStarted(true);
-        setLoading(true);
-        const reply = await callAPEX([{ role:"user", content:"start" }]);
-        setMessages([{ role:"assistant", content:reply }]);
-        setNewMsgIndex(0);
-        setLoading(false);
-      }
-
-      async function sendMessage(text) {
-        const userText = (text || input).trim();
-        if (!userText || loading) return;
-        setInput("");
-        const newHistory = [...messages, { role:"user", content:userText }];
-        setMessages(newHistory);
-        setLoading(true);
-        const reply = await callAPEX(newHistory);
-        const final = [...newHistory, { role:"assistant", content:reply }];
-        setMessages(final);
-        setNewMsgIndex(final.length - 1);
-        setLoading(false);
-        setTimeout(() => inputRef.current?.focus(), 100);
-      }
-
-      if (!started) return <LandingPage onStart={startConversation} />;
-
-      return (
-        <ChatPage
-          messages={messages}
-          loading={loading}
-          input={input}
-          setInput={setInput}
-          onSend={sendMessage}
-          quickReplies={QUICK_REPLIES}
-          bottomRef={bottomRef}
-          inputRef={inputRef}
-          newMsgIndex={newMsgIndex}
-        />
-      );
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
+/* ── BOOT ──────────────────────────────────────────────────────────────── */
+renderLanding();
+</script>
 </body>
 </html>

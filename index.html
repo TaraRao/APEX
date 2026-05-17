@@ -400,7 +400,60 @@ Start with a confident, intriguing opener that hooks traders immediately. Do NOT
       );
     }
 
+    function ApiKeyScreen({ onSave }) {
+      const [key, setKey] = React.useState("");
+      return (
+        <div style={{
+          minHeight:"100vh", background:"#080808", display:"flex",
+          alignItems:"center", justifyContent:"center", padding:24,
+        }}>
+          <div style={{ maxWidth:420, width:"100%", textAlign:"center" }}>
+            <div style={{ fontSize:10, letterSpacing:5, color:"#d4a843", fontFamily:"monospace", marginBottom:16 }}>ONE-TIME SETUP</div>
+            <h2 style={{ color:"#fff", fontFamily:"Georgia,serif", fontWeight:400, fontSize:26, marginBottom:12 }}>
+              Enter your Anthropic API Key
+            </h2>
+            <p style={{ color:"rgba(255,255,255,0.45)", fontSize:13, lineHeight:1.7, marginBottom:28 }}>
+              Get a free key at <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer"
+                style={{ color:"#d4a843" }}>console.anthropic.com</a><br/>
+              Go to <strong style={{color:"rgba(255,255,255,0.7)"}}>API Keys → Create Key</strong>. Paste it below.<br/>
+              Stored only in your browser — never shared.
+            </p>
+            <input
+              type="password"
+              value={key}
+              onChange={e => setKey(e.target.value)}
+              placeholder="sk-ant-api03-..."
+              style={{
+                width:"100%", background:"rgba(255,255,255,0.05)",
+                border:"1px solid rgba(212,168,67,0.3)", borderRadius:10,
+                color:"#fff", padding:"14px 16px", fontSize:14,
+                fontFamily:"monospace", marginBottom:14, outline:"none",
+              }}
+            />
+            <button
+              onClick={() => { if(key.trim()) { try{localStorage.setItem("apex_key",key.trim())}catch(e){} onSave(key.trim()); }}}
+              disabled={!key.trim()}
+              style={{
+                width:"100%", padding:"15px",
+                background: key.trim() ? "linear-gradient(135deg,#d4a843,#8b6914)" : "rgba(255,255,255,0.08)",
+                border:"none", borderRadius:10,
+                color: key.trim() ? "#000" : "rgba(255,255,255,0.25)",
+                fontSize:14, fontWeight:700, fontFamily:"monospace", letterSpacing:1,
+                cursor: key.trim() ? "pointer" : "not-allowed",
+              }}
+            >
+              LAUNCH APEX →
+            </button>
+            <p style={{ marginTop:14, fontSize:11, color:"rgba(255,255,255,0.18)" }}>
+              🔒 Key stored locally · Only sent to Anthropic
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     function App() {
+      const [apiKey, setApiKey] = React.useState(() => { try{ return localStorage.getItem("apex_key")||"" }catch(e){ return "" } });
       const [started, setStarted] = useState(false);
       const [messages, setMessages] = useState([]);
       const [input, setInput] = useState("");
@@ -414,23 +467,45 @@ Start with a confident, intriguing opener that hooks traders immediately. Do NOT
       }, [messages, loading]);
 
       async function callAPEX(history) {
+        let res, rawText, data;
         try {
-          const res = await fetch("https://api.anthropic.com/v1/messages", {
-            method:"POST",
-            headers:{ "Content-Type":"application/json" },
+          res = await fetch("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": apiKey,
+              "anthropic-version": "2023-06-01",
+              "anthropic-dangerous-direct-browser-access": "true",
+            },
             body: JSON.stringify({
-              model:"claude-sonnet-4-20250514",
-              max_tokens:1000,
+              model: "claude-sonnet-4-20250514",
+              max_tokens: 1000,
               system: SYSTEM_PROMPT,
               messages: history,
             }),
           });
-          const data = await res.json();
-          return data.content?.map(b => b.text || "").join("") || "Let me think on that...";
-        } catch {
-          return "Connection issue — please try again in a moment.";
+        } catch(e) {
+          return "❌ Network error (CORS or no internet): " + e.message + ". Make sure you are accessing this page via a live URL (Netlify/GitHub), not a local file.";
         }
+        try {
+          rawText = await res.text();
+        } catch(e) {
+          return "❌ Could not read response body: " + e.message;
+        }
+        if (!res.ok) {
+          return "❌ HTTP " + res.status + " — " + rawText.slice(0, 300);
+        }
+        try {
+          data = JSON.parse(rawText);
+        } catch(e) {
+          return "❌ Response is not JSON (status " + res.status + "): " + rawText.slice(0, 200);
+        }
+        if (data.error) return "❌ API error: " + (data.error.message || JSON.stringify(data.error));
+        if (!data.content) return "❌ No content in response: " + JSON.stringify(data).slice(0, 200);
+        return data.content.map(b => b.text || "").join("") || "Empty response";
       }
+
+      if (!apiKey) return <ApiKeyScreen onSave={setApiKey} />;
 
       async function startConversation() {
         setStarted(true);

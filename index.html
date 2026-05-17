@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APEX — Gold Trading Strategist | Investo</title>
+  <meta name="description" content="Talk to APEX — our AI trading strategist. Get the Gold Trading Playbook and learn exactly when XAUUSD moves and why." />
+  <meta property="og:title" content="APEX — Gold Trading Strategist" />
+  <meta property="og:description" content="A macro-driven system for trading XAUUSD with confidence. £4.50. Instant download." />
+  <meta property="og:image" content="https://pe56d.s3.amazonaws.com/o_1jogekavj1lc289onpb5581upi15.png" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body, #root { height: 100%; }
+    body { background: #080808; font-family: sans-serif; -webkit-font-smoothing: antialiased; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.3); border-radius: 2px; }
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(212,168,67,0.3); }
+      50% { box-shadow: 0 0 50px rgba(212,168,67,0.7); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    textarea { resize: none; }
+    textarea:focus, input:focus { outline: none; }
+    a { color: inherit; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const BOOK_URL = "https://payhip.com/Investo";
+
+    const SYSTEM_PROMPT = `You are APEX — an elite, razor-sharp AI sales strategist for the Gold Trading Playbook (£10), sold at https://payhip.com/Investo.
+
+YOUR MISSION: Qualify visitors, identify traders, build urgency, handle objections, and close the sale.
+
+PRODUCT FACTS:
+- Name: "Gold Price Forecast 2026: The Ultimate Playbook for $5,000+ Gold"
+- Price: £4.50 (less than a cup of coffee — and one good trade pays for it a thousand times over)
+- Format: PDF (3MB), instant download
+- Link: https://payhip.com/Investo
+- What it delivers:
+  • Macro-driven XAUUSD trading system — NFP, CPI, PPI, ISM, Fed decisions decoded into exact bullish/bearish triggers
+  • Exact thresholds: NFP <100K = instant bullish; CPI >4% = bearish shock
+  • 30-second pre-trade checklist
+  • Timing rules: no trading first 30 seconds, wait for second candle confirmation
+  • Crisis-mode logic: wars, bank failures, liquidity shocks = risk-off = gold up
+  • DXY correlation rules, key level framework, 1% risk discipline
+  • Scannable in 30 seconds before any major release
+  • Real review: beginner made first £50 immediately after reading it
+
+YOUR SALES APPROACH:
+1. QUALIFY FIRST — Ask 1 natural question to identify if they trade gold/forex or want to.
+2. IDENTIFY PAIN — Find their frustration: guessing entries? missing news moves? no system? emotional trading?
+3. AGITATE — Make the pain vivid. "You've probably watched gold spike 30 pips on NFP with no idea which way to go."
+4. SOLVE — Present the playbook as the exact solution to their specific pain.
+5. HANDLE OBJECTIONS:
+   - "Too expensive" → "It's £4.50. That's less than a coffee. One trade using this pays for it a thousand times over."
+   - "I'm a beginner" → "A beginner made £50 on their first trade after reading it."
+   - "I already have a system" → "Does yours give exact NFP thresholds that flip gold bullish in seconds?"
+   - "I don't trade gold" → "XAUUSD is the most macro-responsive instrument. This gives you edge across the board."
+6. CLOSE with urgency and always include the buy link: https://payhip.com/Investo
+
+PERSONALITY:
+- Confident, direct, never pushy or salesy
+- Speak like a seasoned trader, not a marketer
+- Short punchy sentences. Maximum 3-4 sentences per reply.
+- Use trading language naturally (pips, entries, macro, DXY, impulse, price action)
+- You are APEX — a trading strategist, not a chatbot
+
+CLOSING LINES:
+- "It's £4.50. Less than a coffee. What's stopping you?"  
+- "One NFP trade with this system pays for it a thousand times over."
+- "Grab it here — instant download: https://payhip.com/Investo"
+
+Start with a confident, intriguing opener that hooks traders immediately. Do NOT say "Hello" or "Hi there". Open with a bold statement about gold or trading.`;
+
+    const QUICK_REPLIES = [
+      "I trade forex / gold",
+      "I'm new to trading",
+      "What's inside the playbook?",
+      "Is it worth £10?",
+      "I already have a system",
+      "Tell me about XAUUSD",
+    ];
+
+    function TypingDots() {
+      return (
+        <div style={{ display:"flex", gap:5, padding:"14px 18px", alignItems:"center" }}>
+          {[0,1,2].map(i => (
+            <div key={i} style={{
+              width:7, height:7, borderRadius:"50%", background:"#d4a843",
+              animation:`pulse 1.2s ease-in-out ${i*0.2}s infinite`
+            }}/>
+          ))}
+        </div>
+      );
+    }
+
+    function Message({ msg, isNew }) {
+      const isBot = msg.role === "assistant";
+
+      const renderContent = (text) => {
+        const parts = text.split(/(https:\/\/payhip\.com\/Investo)/g);
+        return parts.map((part, i) =>
+          part === "https://payhip.com/Investo"
+            ? <a key={i} href={BOOK_URL} target="_blank" rel="noopener noreferrer"
+                style={{ color:"#d4a843", textDecoration:"none", fontWeight:700, borderBottom:"1px solid rgba(212,168,67,0.4)" }}>
+                payhip.com/Investo
+              </a>
+            : part
+        );
+      };
+
+      const hasBuyLink = msg.content && msg.content.includes("payhip.com/Investo");
+
+      return (
+        <div style={{
+          display:"flex", flexDirection: isBot ? "row" : "row-reverse",
+          gap:10, marginBottom:16,
+          animation: isNew ? "slideIn 0.35s ease-out" : "none",
+        }}>
+          {isBot && (
+            <div style={{
+              width:36, height:36, borderRadius:"50%", flexShrink:0,
+              background:"linear-gradient(135deg,#d4a843,#8b6914)",
+              display:"flex", alignItems:"center", justifyContent:"center",
+              fontSize:14, fontWeight:900, color:"#000", fontFamily:"monospace",
+              marginTop:2,
+            }}>A</div>
+          )}
+          <div style={{ maxWidth:"80%", display:"flex", flexDirection:"column", alignItems: isBot ? "flex-start" : "flex-end" }}>
+            {isBot && <div style={{ fontSize:10, color:"#d4a843", letterSpacing:2, marginBottom:5, fontFamily:"monospace" }}>APEX</div>}
+            <div style={{
+              padding:"12px 16px",
+              borderRadius: isBot ? "4px 16px 16px 16px" : "16px 4px 16px 16px",
+              background: isBot ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg,#d4a843,#b8902e)",
+              color: isBot ? "rgba(255,255,255,0.9)" : "#000",
+              fontSize:14, lineHeight:1.65,
+              border: isBot ? "1px solid rgba(212,168,67,0.15)" : "none",
+              whiteSpace:"pre-wrap", wordBreak:"break-word",
+            }}>
+              {isBot ? renderContent(msg.content) : msg.content}
+            </div>
+            {hasBuyLink && isBot && (
+              <a href={BOOK_URL} target="_blank" rel="noopener noreferrer" style={{
+                marginTop:10, padding:"11px 24px",
+                background:"linear-gradient(135deg,#d4a843,#8b6914)",
+                color:"#000", borderRadius:8, fontWeight:800, fontSize:13,
+                textDecoration:"none", fontFamily:"monospace", letterSpacing:1,
+                display:"inline-block", animation:"glow 2s ease infinite",
+              }}>
+                ⚡ GET THE PLAYBOOK — £4.50
+              </a>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function LandingPage({ onStart }) {
+      return (
+        <div style={{
+          minHeight:"100vh", background:"#080808",
+          display:"flex", flexDirection:"column", alignItems:"center",
+          justifyContent:"center", padding:24, position:"relative", overflow:"hidden",
+        }}>
+          <div style={{
+            position:"absolute", top:0, left:0, right:0, bottom:0,
+            background:"radial-gradient(ellipse at 50% 25%, rgba(212,168,67,0.09) 0%, transparent 65%)",
+            pointerEvents:"none",
+          }}/>
+
+          {/* Decorative orbs */}
+          <div style={{ position:"absolute", top:"10%", left:"5%", width:250, height:250,
+            background:"radial-gradient(circle, rgba(212,168,67,0.06) 0%, transparent 70%)",
+            borderRadius:"50%", filter:"blur(40px)", pointerEvents:"none" }}/>
+          <div style={{ position:"absolute", bottom:"10%", right:"5%", width:200, height:200,
+            background:"radial-gradient(circle, rgba(212,168,67,0.05) 0%, transparent 70%)",
+            borderRadius:"50%", filter:"blur(30px)", pointerEvents:"none" }}/>
+
+          <div style={{ animation:"fadeUp 0.6s ease-out", textAlign:"center", maxWidth:480, width:"100%" }}>
+            {/* Eyebrow */}
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, marginBottom:24 }}>
+              <div style={{ height:1, width:40, background:"linear-gradient(90deg,transparent,#d4a843)" }}/>
+              <span style={{ fontSize:10, letterSpacing:5, color:"#d4a843", fontFamily:"monospace", textTransform:"uppercase" }}>
+                Investo · Gold Intelligence
+              </span>
+              <div style={{ height:1, width:40, background:"linear-gradient(90deg,#d4a843,transparent)" }}/>
+            </div>
+
+            <h1 style={{
+              fontSize:"clamp(28px,6vw,48px)", fontWeight:300, color:"#fff",
+              fontFamily:"Georgia,serif", lineHeight:1.15, letterSpacing:-1, marginBottom:14,
+            }}>
+              Still guessing which way<br/>
+              <span style={{
+                background:"linear-gradient(135deg,#d4a843 0%,#f5d078 45%,#d4a843 100%)",
+                WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", fontWeight:700,
+              }}>gold is going to move?</span>
+            </h1>
+
+            <p style={{ color:"rgba(255,255,255,0.38)", fontSize:15, lineHeight:1.65, marginBottom:36 }}>
+              Talk to <strong style={{ color:"rgba(255,255,255,0.6)" }}>APEX</strong> — our AI trading strategist. 
+              Tell us how you trade. We'll show you exactly what you're missing.
+            </p>
+
+            {/* Product card */}
+            <div style={{
+              background:"rgba(212,168,67,0.05)", border:"1px solid rgba(212,168,67,0.18)",
+              borderRadius:18, padding:"22px 26px", marginBottom:32, textAlign:"left",
+            }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
+                <div>
+                  <div style={{ fontSize:10, color:"#d4a843", letterSpacing:3, fontFamily:"monospace", marginBottom:6, textTransform:"uppercase" }}>The Playbook</div>
+                  <div style={{ fontSize:15, fontWeight:700, color:"#fff", lineHeight:1.35 }}>
+                    Gold Price Forecast 2026<br/>
+                    <span style={{ color:"#d4a843" }}>$5,000+ Gold</span>
+                  </div>
+                </div>
+                <div style={{ textAlign:"right", flexShrink:0, marginLeft:12 }}>
+                  <div style={{ fontSize:26, fontWeight:900, color:"#d4a843", fontFamily:"monospace", lineHeight:1 }}>£4.50</div>
+                  <div style={{ fontSize:10, color:"rgba(255,255,255,0.25)", fontFamily:"sans-serif", marginTop:2 }}>PDF · Instant</div>
+                </div>
+              </div>
+              {[
+                "NFP / CPI / Fed triggers decoded into exact signals",
+                "30-second pre-trade checklist",
+                "Crisis-mode logic: wars, rate shocks, bank failures",
+                "Timing rules that protect your capital",
+              ].map((f,i) => (
+                <div key={i} style={{ display:"flex", gap:10, marginBottom:8, alignItems:"flex-start" }}>
+                  <span style={{ color:"#d4a843", fontSize:11, marginTop:2, flexShrink:0 }}>◆</span>
+                  <span style={{ fontSize:13, color:"rgba(255,255,255,0.55)", lineHeight:1.4 }}>{f}</span>
+                </div>
+              ))}
+              <div style={{
+                marginTop:16, padding:"10px 14px", borderRadius:8,
+                background:"rgba(212,168,67,0.08)", border:"1px solid rgba(212,168,67,0.15)",
+              }}>
+                <span style={{ fontSize:12, color:"#d4a843", fontFamily:"monospace" }}>★★★★★</span>
+                <span style={{ fontSize:12, color:"rgba(255,255,255,0.5)", marginLeft:8 }}>
+                  "Got my first £50 trade immediately after reading it" — Verified buyer
+                </span>
+              </div>
+            </div>
+
+            <button onClick={onStart} style={{
+              width:"100%", padding:"17px", cursor:"pointer",
+              background:"linear-gradient(135deg,#d4a843,#8b6914)",
+              border:"none", borderRadius:12,
+              color:"#000", fontSize:15, fontWeight:800,
+              fontFamily:"monospace", letterSpacing:2, textTransform:"uppercase",
+              animation:"glow 2.5s ease infinite",
+            }}>
+              Talk to APEX — Free →
+            </button>
+
+            <p style={{ marginTop:12, fontSize:11, color:"rgba(255,255,255,0.18)" }}>
+              No email · No signup · Instant access
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    function ChatPage({ messages, loading, input, setInput, onSend, quickReplies, bottomRef, inputRef, newMsgIndex }) {
+      function handleKey(e) {
+        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); }
+      }
+      return (
+        <div style={{ height:"100vh", background:"#080808", display:"flex", flexDirection:"column", position:"relative", overflow:"hidden" }}>
+          {/* Background glow */}
+          <div style={{
+            position:"absolute", top:0, left:0, right:0, bottom:0,
+            background:"radial-gradient(ellipse at 50% 0%, rgba(212,168,67,0.04) 0%, transparent 55%)",
+            pointerEvents:"none",
+          }}/>
+
+          {/* Header */}
+          <div style={{
+            padding:"14px 18px", borderBottom:"1px solid rgba(212,168,67,0.1)",
+            display:"flex", alignItems:"center", gap:12,
+            background:"rgba(0,0,0,0.7)", backdropFilter:"blur(12px)", zIndex:10,
+          }}>
+            <div style={{
+              width:40, height:40, borderRadius:"50%", flexShrink:0,
+              background:"linear-gradient(135deg,#d4a843,#5a3e05)",
+              display:"flex", alignItems:"center", justifyContent:"center",
+              fontSize:16, fontWeight:900, color:"#000", fontFamily:"monospace",
+              animation:"glow 3s ease infinite",
+            }}>A</div>
+            <div>
+              <div style={{ fontWeight:700, color:"#fff", fontSize:14 }}>APEX</div>
+              <div style={{ fontSize:10, color:"#d4a843", fontFamily:"monospace", letterSpacing:1 }}>● LIVE · Gold Trading Strategist</div>
+            </div>
+            <a href={BOOK_URL} target="_blank" rel="noopener noreferrer" style={{
+              marginLeft:"auto",
+              padding:"8px 16px",
+              background:"rgba(212,168,67,0.1)", border:"1px solid rgba(212,168,67,0.28)",
+              borderRadius:8, color:"#d4a843", textDecoration:"none",
+              fontSize:12, fontWeight:700, fontFamily:"monospace", letterSpacing:1, whiteSpace:"nowrap",
+            }}>£4.50 GET IT →</a>
+          </div>
+
+          {/* Messages */}
+          <div style={{ flex:1, overflowY:"auto", padding:"20px 16px" }}>
+            {messages.map((msg, i) => (
+              <Message key={i} msg={msg} isNew={i === newMsgIndex} />
+            ))}
+            {loading && (
+              <div style={{ display:"flex", gap:10, marginBottom:16, animation:"slideIn 0.3s ease-out" }}>
+                <div style={{
+                  width:36, height:36, borderRadius:"50%", flexShrink:0,
+                  background:"linear-gradient(135deg,#d4a843,#8b6914)",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  fontSize:14, fontWeight:900, color:"#000", fontFamily:"monospace",
+                }}>A</div>
+                <div style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(212,168,67,0.15)", borderRadius:"4px 16px 16px 16px" }}>
+                  <TypingDots />
+                </div>
+              </div>
+            )}
+            <div ref={bottomRef} />
+          </div>
+
+          {/* Quick replies */}
+          {messages.length <= 2 && !loading && (
+            <div style={{ padding:"8px 16px", display:"flex", gap:8, flexWrap:"wrap" }}>
+              {quickReplies.map((qr,i) => (
+                <button key={i} onClick={() => onSend(qr)} style={{
+                  padding:"7px 14px",
+                  background:"rgba(212,168,67,0.07)", border:"1px solid rgba(212,168,67,0.2)",
+                  borderRadius:20, color:"#d4a843", fontSize:12, cursor:"pointer",
+                  whiteSpace:"nowrap", transition:"all 0.15s",
+                }}>{qr}</button>
+              ))}
+            </div>
+          )}
+
+          {/* Input bar */}
+          <div style={{
+            padding:"12px 16px 18px",
+            borderTop:"1px solid rgba(212,168,67,0.08)",
+            background:"rgba(0,0,0,0.75)", backdropFilter:"blur(12px)",
+          }}>
+            <div style={{
+              display:"flex", gap:10, alignItems:"flex-end",
+              background:"rgba(255,255,255,0.04)", border:"1px solid rgba(212,168,67,0.18)",
+              borderRadius:12, padding:"10px 14px",
+            }}>
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={handleKey}
+                placeholder="Ask about gold, your trading style, the playbook..."
+                rows={1}
+                style={{
+                  flex:1, background:"transparent", border:"none",
+                  color:"#fff", fontSize:14, lineHeight:1.5,
+                  maxHeight:80, overflow:"auto", fontFamily:"sans-serif",
+                }}
+              />
+              <button onClick={() => onSend()} disabled={!input.trim() || loading} style={{
+                width:36, height:36, flexShrink:0,
+                background: input.trim() ? "linear-gradient(135deg,#d4a843,#8b6914)" : "rgba(255,255,255,0.07)",
+                border:"none", borderRadius:8, cursor: input.trim() ? "pointer" : "not-allowed",
+                display:"flex", alignItems:"center", justifyContent:"center",
+                fontSize:17, color: input.trim() ? "#000" : "rgba(255,255,255,0.3)",
+                transition:"all 0.2s",
+              }}>↑</button>
+            </div>
+            <div style={{ textAlign:"center", marginTop:8, fontSize:10, color:"rgba(255,255,255,0.12)", fontFamily:"monospace", letterSpacing:1 }}>
+              POWERED BY INVESTO · XAUUSD INTELLIGENCE
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [started, setStarted] = useState(false);
+      const [messages, setMessages] = useState([]);
+      const [input, setInput] = useState("");
+      const [loading, setLoading] = useState(false);
+      const [newMsgIndex, setNewMsgIndex] = useState(null);
+      const bottomRef = useRef(null);
+      const inputRef = useRef(null);
+
+      useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior:"smooth" });
+      }, [messages, loading]);
+
+      async function callAPEX(history) {
+        try {
+          const res = await fetch("https://api.anthropic.com/v1/messages", {
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({
+              model:"claude-sonnet-4-20250514",
+              max_tokens:1000,
+              system: SYSTEM_PROMPT,
+              messages: history,
+            }),
+          });
+          const data = await res.json();
+          return data.content?.map(b => b.text || "").join("") || "Let me think on that...";
+        } catch {
+          return "Connection issue — please try again in a moment.";
+        }
+      }
+
+      async function startConversation() {
+        setStarted(true);
+        setLoading(true);
+        const reply = await callAPEX([{ role:"user", content:"start" }]);
+        setMessages([{ role:"assistant", content:reply }]);
+        setNewMsgIndex(0);
+        setLoading(false);
+      }
+
+      async function sendMessage(text) {
+        const userText = (text || input).trim();
+        if (!userText || loading) return;
+        setInput("");
+        const newHistory = [...messages, { role:"user", content:userText }];
+        setMessages(newHistory);
+        setLoading(true);
+        const reply = await callAPEX(newHistory);
+        const final = [...newHistory, { role:"assistant", content:reply }];
+        setMessages(final);
+        setNewMsgIndex(final.length - 1);
+        setLoading(false);
+        setTimeout(() => inputRef.current?.focus(), 100);
+      }
+
+      if (!started) return <LandingPage onStart={startConversation} />;
+
+      return (
+        <ChatPage
+          messages={messages}
+          loading={loading}
+          input={input}
+          setInput={setInput}
+          onSend={sendMessage}
+          quickReplies={QUICK_REPLIES}
+          bottomRef={bottomRef}
+          inputRef={inputRef}
+          newMsgIndex={newMsgIndex}
+        />
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
